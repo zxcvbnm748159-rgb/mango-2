@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webcam Demo</title>
+    <style>
+        /* สไตล์สำหรับวิดีโอเพื่อไม่ให้ใหญ่เกินไป */
+        #camera {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #333;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>การทดสอบเปิดกล้องเว็บด้วย JavaScript</h1>
+
+    <button id="startButton">เปิดกล้อง (กล้องหลัง)</button>
+
+    <video id="camera" autoplay playsinline></video>
+    
+    <script>
+        const startButton = document.getElementById('startButton');
+        const videoElement = document.getElementById('camera');
+
+        startButton.addEventListener('click', startCamera);
+
+        async function startCamera() {
+            // A. ตรวจสอบความสามารถของเบราว์เซอร์
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("เบราว์เซอร์ไม่รองรับ MediaDevices API กรุณาใช้ Chrome, Firefox, หรือ Safari (และต้องเป็น HTTPS)");
+                return;
+            }
+
+            try {
+                // B. เรียกใช้กล้อง
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    // facingMode: "environment" สำหรับกล้องหลัง
+                    // facingMode: "user" สำหรับกล้องหน้า
+                    video: { 
+                        facingMode: "environment", 
+                        width: { ideal: 1280 }, // ลองขอความละเอียด 1280
+                        height: { ideal: 720 } 
+                    },
+                    audio: false // ไม่ต้องการเสียง
+                });
+
+                // C. แสดงผลกล้องในแท็ก <video>
+                videoElement.srcObject = stream;
+                // ซ่อนปุ่มเมื่อกล้องเปิดแล้ว (ทางเลือก)
+                startButton.style.display = 'none';
+
+            } catch (err) {
+                // D. จัดการข้อผิดพลาด
+                let errorMessage = "ไม่สามารถเปิดกล้องได้: ";
+                
+                if (err.name === "NotAllowedError") {
+                    errorMessage += "ผู้ใช้ปฏิเสธการเข้าถึงกล้อง";
+                } else if (err.name === "NotFoundError") {
+                    errorMessage += "ไม่พบกล้องในระบบ";
+                } else {
+                    errorMessage += err.name;
+                }
+                
+                alert(errorMessage);
+                console.error("เกิดข้อผิดพลาดในการเปิดกล้อง:", err);
+            }
+        }
+    </script>
+
+</body>
+</html>
